@@ -1,5 +1,5 @@
 import express from 'express';
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 import 'dotenv/config';
 import cors from 'cors';
 
@@ -40,10 +40,33 @@ app.get('/jobs', async (req, res) => {
 });
 
 //job post api create
+
 app.post('/jobs', async (req, res) => {
-    const job = req.body;
-    const cursor = await jobs.insertOne(job);
-    res.send(cursor);
+    const job = {
+        ...req.body,
+        createdAt: new Date(),
+        status: 'active',
+        applicantsCount: 0,
+    };
+
+    const result = await jobs.insertOne(job);
+    res.send(result);
+});
+
+// job delete api create
+app.delete('/jobs/:id', async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: new ObjectId(id) };
+    const result = await jobs.deleteOne(query);
+    res.send(result);
+});
+
+//jobs update api create
+app.patch('/jobs/:id', async (req, res) => {
+    const id = req.params.id;
+    const updates = req.body;
+    const result = await jobs.updateOne({ _id: new ObjectId(id) }, { $set: updates });
+    res.send(result);
 });
 
 // create new api
